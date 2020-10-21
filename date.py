@@ -1,5 +1,6 @@
 import win32com.client 
 import os, time
+
 outlook=win32com.client.Dispatch("Outlook.Application")
 mapi = outlook.GetNameSpace("MAPI")
 your_folder = mapi.Folders['jhershey@tpm-hawaii.com'].Folders['Inbox'].Folders['test']
@@ -7,16 +8,22 @@ your_folder = mapi.Folders['jhershey@tpm-hawaii.com'].Folders['Inbox'].Folders['
 
 def replaceSubjectLine(email:object):
         #print("starting subject = " + email.Subject)
-        #print("sent on date = " + str(message.senton.date()) )
+        #print("sent on date = " + str(email.Subject) )
         #email.Subject = str(message.senton.date())
         #email.Save
-        bad_chars = [':', '!', '*','&']
-        new = 'C:/Users/JHershey/Documents/SortDate/' + str(message.senton.date()) + '.msg'
+        bad_chars = [':', '!', '*','&','/','?']
+        
+        try:
+                date = str(email.senton.date())
+
+        except:
+                date = str("unknown date")
+                
+        new = 'C:/Users/JHershey/Documents/SortDate/' + date + '.msg'
         old = email.Subject
         for i in bad_chars :
                 old = old.replace(i, '') #' '
         old = 'C:/Users/JHershey/Documents/SortDate/' + old + '.msg'
-        print('OLD = ' + old)
 
            
         try:
@@ -25,10 +32,13 @@ def replaceSubjectLine(email:object):
                 ph_old = old
                 ph_new = new
                 x = 1
+                print('not found old names = ' + old)
                 while x < 50:
                         temp_insert = '-' + str(x) #temp_insert = ' (' + str(x) + ')' 
+                        temp_insert2 = ' (' + str(x) + ')'
                         idx = ph_old.index('.msg')
                         old = ph_old[:idx] + temp_insert + ph_old[idx:]
+                        old2 = ph_old[:idx] + temp_insert2 + ph_old[idx:]
                         #old = 'C:\\Users\\JHershey\\Documents\\SortDate\\' + 'FW  Insured  Koha Foods  Claim No  20168612 (1)' + '.msg'
                         x+=1
                         try:
@@ -36,7 +46,10 @@ def replaceSubjectLine(email:object):
                                 break;
                         
                         except FileNotFoundError:
-                                print('not found old name = ' + old)
+                                try:
+                                        os.rename(old2,new)
+                                except:
+                                        pass
                                 
 
                         except:
@@ -50,6 +63,7 @@ def replaceSubjectLine(email:object):
                                                 os.rename(old,new)
                                                 break;
                                         except:
+                                                print('looking for a name old = ' + old)
                                                 print('looking for a name new = ' + new)
 
         
@@ -58,8 +72,8 @@ def replaceSubjectLine(email:object):
 #os.rename(r'C:\Users\JHershey\Documents\SortDate\FW Insured  Koha Foods; Claim No. 20168612-3.msg', r'C:\Users\JHershey\Documents\SortDate\' )
 
 
-for message in your_folder.Items:
-    replaceSubjectLine(message)
+for email in your_folder.Items:
+        replaceSubjectLine(email)
   
 
 
